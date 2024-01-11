@@ -7,17 +7,18 @@ warnings.filterwarnings("ignore")
 
 N=40
 Nt = 10
-h = 2*np.pi/N
-k = 1/Nt
-r = k/(h*h)
-c = 0.9
+h = 2*np.pi/N #step size in X direction
+k = 1/Nt #step size in time (t) direction
+#r = k/(h*h)
+c = 0.9 #Kurant number
 time_steps=10
-time=np.arange(0,(time_steps+.5)*k,k)
-x=np.arange(0,2*np.pi+h/2,h)
+time=np.arange(0,(time_steps+.5)*k,k) #specified values for time (t) spacing in the grid
+x=np.arange(0,2*np.pi+h/2,h) #specified values for X spacing in the grid
 
 
-X, Y = np.meshgrid(x, time)
+X, Y = np.meshgrid(x, time) #meshing
 
+#plot
 fig = plt.figure()
 plt.plot(X,Y,'ro');
 plt.plot(x,0*x,'bo',label='Initial Condition');
@@ -29,9 +30,11 @@ plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.title(r'Discrete Grid ',fontsize=24,y=1.08)
 plt.show();
 
+#array for function values
 u=np.zeros((N+1,time_steps+1))
-b=np.zeros(N-1)
-# Initial Condition
+#b=np.zeros(N-1)
+
+# Initial Condition for u
 for i in range (0,N+1):
     u[i,0]=1-np.cos(x[i])
     
@@ -44,6 +47,8 @@ plt.xlabel('x')
 plt.ylabel('u')
 plt.legend(loc='best')
 plt.show()
+
+#border conditions
 ipos = np.zeros(N+1)
 ineg = np.zeros(N+1)
 
@@ -67,14 +72,5 @@ for j in range (1,time_steps+1):
 plt.xlabel('x')
 plt.ylabel('u')
 
-#plt.subplot(122)
-#plt.imshow(u.transpose(), aspect='auto')
-#plt.xticks(np.arange(len(x)), np.round(x,3),rotation=45)
-#plt.yticks(np.arange(len(time)), np.round(time,2))
-#plt.xlabel('x')
-#plt.ylabel('time')
-#clb=plt.colorbar()
-#clb.set_label('w')
-#plt.suptitle('Numerical Solution of the  Wave Equation'%(np.round(r,3)),fontsize=24,y=1.08)
-#fig.tight_layout()
+
 plt.show()
