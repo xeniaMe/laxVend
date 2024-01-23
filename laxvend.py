@@ -80,20 +80,13 @@ def SaveData():
         print("unable to open file for writing")
     #f.close()
 
-SaveData()
 
 
 
 
 
 
-
-
-
-#plot
-# fig = plt.figure()
-# plt.plot(X,Y,'ro');
-# plt.plot(x,0*x,'bo',label='Initial Condition');
+#plt.plot(x,0*x,'bo',label='Initial Condition');
 # plt.xlim((-h,2*np.pi+h))
 # plt.ylim((-k,max(time)+k))
 # plt.xlabel('x')
@@ -115,4 +108,4 @@ SaveData()
 #     plt.plot(x,u[:,j],'o:')
 # plt.xlabel('x')
 # plt.ylabel('u')
-# plt.show()
+#
