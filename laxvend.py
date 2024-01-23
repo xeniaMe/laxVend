@@ -52,7 +52,7 @@ def SetBC():
 
 # расчет
 def Step():
-    for i in range ( 0, N-1 ):
+    for i in range ( 1, N-2 ):
         u1[i] = u[i] - c*(u[i]-u[i]) + c*c/2*(u[i] - 2*u[i]+u[i])
     #print(u1)
         
