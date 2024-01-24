@@ -15,9 +15,9 @@ t = 0 #текущее время
 c = 0.9 #Kurant number
 
 #array for function values
-u=np.linspace(0, N)
-u1 = np.linspace(0, N)
-xs = np.linspace(0,N)
+u= np.zeros((N))
+u1 = np.zeros((N))
+xs = np.linspace(a, b, N)
 
 
 #построение расчетной сетки 
@@ -25,7 +25,7 @@ dx = (b-a)/ (N-1)
 dt = c * dx/v
 xs[0] = a
 
-for i in range (0, N):
+for i in range (1, N):
     xs[i] = xs[i-1] + dx
 
 
@@ -52,8 +52,8 @@ def SetBC():
 
 # расчет
 def Step():
-    for i in range ( 1, N-2 ):
-        u1[i] = u[i] - c*(u[i]-u[i]) + c*c/2*(u[i] - 2*u[i]+u[i])
+    for i in range ( 1, N-1 ):
+        u1[i] = u[i] - c*(u[i+1]-u[i-1]) + c*c/2*(u[i+1] - 2*u[i]+u[i-1])
     #print(u1)
         
 
@@ -72,7 +72,7 @@ while t <= t_stop:
 
 def SaveData():
     try:
-        with open("C:/Рабочий стол/work1/data.txt", "w") as f:
+        with open("data.txt", "w") as f:
             f.write("#x u\n")
             for i in range(len(xs)):
                 f.write(f"{xs[i]} {u1[i]}\n")
@@ -80,7 +80,7 @@ def SaveData():
         print("unable to open file for writing")
     #f.close()
 
-
+SaveData()
 
 
 
