@@ -15,8 +15,8 @@ t = 0 #текущее время
 c = 0.9 #Kurant number
 
 #array for function values
-u= np.zeros((N))
-u1 = np.zeros((N))
+un= np.zeros((N))
+un1 = np.zeros((N))
 xs = np.linspace(a, b, N)
 
 
@@ -43,24 +43,24 @@ def SetIC():
     #global t, u, xs
     t = 0.0
     for i in range(N):
-        u[i] = U0(xs[i])
+        un[i] = U0(xs[i])
 
 def SetBC():
-    u1[0] = 5 #u[0] - c*(u[0] - u[N-2])
-    u1[N-1] = 10 #u[N-1] - c*(u[N-1] - u[N-2])
+    un1[0] = 5 #u[0] - c*(u[0] - u[N-2])
+    un1[N-1] = 10 #u[N-1] - c*(u[N-1] - u[N-2])
 
 
 # расчет
 def Step():
     for i in range ( 1, N-1 ):
-        u1[i] = u[i] - c*(u[i+1]-u[i-1]) + c*c/2*(u[i+1] - 2*u[i]+u[i-1])
+        un1[i] = un[i] - c*(un[i+1]-un[i-1]) + c*c/2*(un[i+1] - 2*un[i]+un[i-1])
     #print(u1)
         
 
 #обновление НУ
 def UpdateIC():
     for i in range ( 0, N):
-        u[i] = u1[i]
+        un[i] = un1[i]
 
 
 
@@ -75,7 +75,7 @@ def SaveData():
         with open("data.txt", "w") as f:
             f.write("#x u\n")
             for i in range(len(xs)):
-                f.write(f"{xs[i]} {u1[i]}\n")
+                f.write(f"{xs[i]} {un1[i]}\n")
     except IOError:
         print("unable to open file for writing")
     #f.close()
