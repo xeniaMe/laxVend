@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore")
 
 a = 0
 b = 1
-N = 320
+N = 80
 v = 1
 t_stop = 0.4
 t = 0 #текущее время
@@ -46,7 +46,7 @@ def SetIC():
         un[i] = U0(xs[i])
 
 def SetBC():
-    un1[0] =   un[0] - c*(un[0] - un[N-2])
+    un1[0] = un[0] - c*(un[0] - un[N-2])
     un1[N-1] = un[N-1] - c*(un[N-1] - un[N-2])
 
 
@@ -57,9 +57,10 @@ def SetBC():
 def Step():
     for i in range ( 1, N-1 ):
         un1[i] = un[i] - c*(un[i+1]-un[i-1]) + (c*c/2)*(un[i+1] - 2*un[i]+un[i-1])
+        print(un1[i])
  
         
-    #print(u1)
+        
         
 
 
@@ -75,15 +76,16 @@ while t <= t_stop:
     SetIC()
     SetBC()  
     Step()   
-    UpdateIC()  
+    UpdateIC() 
     t += dt
 
 def SaveData():
     try:
-        with open("data_n_320.txt", "w") as f:
+        with open("C:\Рабочий стол\work1\data0_4_t.txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
                 f.write(f"{xs[i]} {un1[i]} \n")
+                #print(un1[i])
     except IOError:
         print("unable to open file for writing")
     #f.close()
