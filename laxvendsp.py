@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Feb 21 13:12:40 2024
+
+@author: Mi
+"""
+
 import numpy as np
 import math 
 
@@ -8,9 +15,9 @@ warnings.filterwarnings("ignore")
 
 a = 0
 b = 1
-N = 200
+N = 80
 v = 1
-t_stop = 0.25
+t_stop = 0.4
 t = 0 #текущее время
 c = 0.9 #Kurant number
 
@@ -52,8 +59,7 @@ def SetBC():
 
 # расчет
     
-#un1[0] = U0(a)  # Значение на левой границе (x = a)
-#un1[N-1] = U0(b)  # Значение на правой границе (x = b)
+
 
 def Step():
     for i in range ( 1, N-1 ):
@@ -81,7 +87,7 @@ while t <= t_stop:
 
 def SaveData():
     try:
-        with open("C:\Рабочий стол\work1\data0_25_t.txt", "w") as f:
+        with open("C:\Рабочий стол\work1\data0_4_t.txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
                 f.write(f"{xs[i]} {un1[i]} \n")
