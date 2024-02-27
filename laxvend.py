@@ -57,15 +57,9 @@ def SetBC():
 
 def Step():
     for i in range ( 1, N-1 ):
-        un1[i] = un[i] - c*(un[i+1]-un[i-1]) + (c*c/2)*(un[i+1] - 2*un[i]+un[i-1])
+        un1[i] = un[i] - 0.5*c*(un[i+1]-un[i-1]) + 0.5*c**2*(un[i+1] - 2*un[i]+un[i-1])
         print(un1[i])
  
-        
-        
-        
-
-
-
 #обновление НУ
 def UpdateIC():
     for i in range ( 0, N):
@@ -81,7 +75,7 @@ while t <= t_stop:
 
 def SaveData():
     try:
-        with open("C:\Рабочий стол\work1\data0_25_t.txt", "w") as f:
+        with open("data.txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
                 f.write(f"{xs[i]} {un1[i]} \n")
