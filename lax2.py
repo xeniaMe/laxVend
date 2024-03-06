@@ -9,6 +9,7 @@ warnings.filterwarnings("ignore")
 a = 0
 b = 1
 N = 80
+a_v= 1 #скорость переноса
 v_max = 1
 t_stop = 0.4
 t = 0 #текущее время
@@ -58,13 +59,14 @@ def SetBC():
 def UpdateTimeStep():
     dt = c*dx/v_max
 
+def F(u):
+    return a_v*u
+
 def Step():
     for i in range ( 0, N-1 ):
-        f[i] = a*un[i]
-        un_s[i] = 0.5*(un[i+1]+un[i])-(dt/dx)*0.5*(un[i+1]-un[i])
+        un_s[i] = 0.5*(un[i+1]+un[i])-(dt/dx)*0.5*(F(un[i+1])-F(un[i]))
     for i in range ( 1, N-1 ):
-        f[i] = a*un_s[i]
-        un1[i] = un[i] - (dt/dx)*(un_s[i]-un_s[i-1])
+        un1[i] = un[i] - (dt/dx)*(F(un_s[i])-F(un_s[i-1]))
        
  
 #обновление НУ
