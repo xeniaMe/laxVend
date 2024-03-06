@@ -14,12 +14,16 @@ v_max = a_v
 t_stop = 0.4
 t = 0 #текущее время
 c = 1.01 #Kurant number
+Bz =1
+rho = 1
 
 #array for function values
-un= np.zeros((N))
-f= np.zeros((N))
-un1 = np.zeros((N))
-un_s = np.zeros((N))
+vn= np.zeros((N))
+vn1 = np.zeros((N))
+vn_s = np.zeros((N))
+bn= np.zeros((N))
+bn1 = np.zeros((N))
+bn_s = np.zeros((N))
 xs = np.linspace(a, b, N)
 
 
@@ -46,50 +50,70 @@ def SetIC():
     #global t, u, xs
     t = 0.0
     for i in range(N):
-        un[i] = U0(xs[i])
+        vn[i] = U0(xs[i])
+    for i in range(N):
+        bn[i] = U0(xs[i])
+
+def Fv(u):
+    return -Bz/4*np.pi*rho*u
+
+def Fb(u):
+    return -Bz*u
 
 def SetBC():
-    un1[0] = un[0] - 0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-2*un[0]+un[N-2])
-    un1[N-1] = un[N-1] -0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-2*un[N-1]+un[N-2])
+    vn1[0] = vn[0] - 0.5*c*(vn[1] - vn[N-2])+0.5*c*c*(vn[1]-2*vn[0]+vn[N-2])
+    vn1[N-1] = vn[N-1] -0.5*c*(vn[1] - vn[N-2])+0.5*c*c*(vn[1]-2*vn[N-1]+vn[N-2])
+    bn1[0] = bn[0] - 0.5*c*(bn[1] - bn[N-2])+0.5*c*c*(bn[1]-2*bn[0]+bn[N-2])
+    bn1[N-1] = bn[N-1] -0.5*c*(bn[1] - bn[N-2])+0.5*c*c*(bn[1]-2*bn[N-1]+bn[N-2])
 
 
 
 # расчет
     
 def UpdateTimeStep():
-    v_max = a_v
+    vA = Bz/np.sqrt(4*np.pi*rho)
+    for j in range(N-1):
+        v_max = max(abs(vn[j]) + vA)
     dt = c*dx/v_max
 
-def F(u):
-    return a_v*u
 
-def Step():
+
+def Step1_v():
     for i in range ( 0, N-1 ):
-        un_s[i] = 0.5*(un[i+1]+un[i])-(dt/dx)*0.5*(F(un[i+1])-F(un[i]))
+        vn_s[i] = 0.5*(vn[i+1]+vn[i])-(dt/dx)*0.5*(Fv(vn[i+1])-Fv(vn[i]))
     for i in range ( 1, N-1 ):
-        un1[i] = un[i] - (dt/dx)*(F(un_s[i])-F(un_s[i-1]))
+        vn1[i] = vn[i] - (dt/dx)*(Fv(vn_s[i])-Fv(vn_s[i-1]))
        
  
+def Step1_b():
+    for i in range ( 0, N-1 ):
+        bn_s[i] = 0.5*(bn[i+1]+bn[i])-(dt/dx)*0.5*(Fb(bn[i+1])-Fb(bn[i]))
+    for i in range ( 1, N-1 ):
+        bn1[i] = bn[i] - (dt/dx)*(Fb(bn_s[i])-Fb(bn_s[i-1]))
+
 #обновление НУ
 def UpdateIC():
     for i in range ( 0, N):
-        un[i] = un1[i]
+        vn[i] = vn1[i]
+    for i in range ( 0, N):
+        bn[i] = bn1[i]
 
 
 SetIC()
 while t <= t_stop:
     SetBC()
     UpdateTimeStep()  
-    Step()   
+    Step1_v()   
+    Step1_b()   
     UpdateIC() 
     t += dt
 
 def SaveData():
     try:
-        with open("data303.txt", "w") as f:
+        with open("data305.txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
-                f.write(f"{xs[i]} {un1[i]} \n")
+                f.write(f"{xs[i]} {vn1[i]} \n")
                 #print(un1[i])
     except IOError:
         print("unable to open file for writing")
