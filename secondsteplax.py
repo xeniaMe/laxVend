@@ -15,8 +15,12 @@ t = 0 #текущее время
 c = 0.9 #Kurant number
 
 #array for function values
-un= np.zeros((N))
-un1 = np.zeros((N))
+Vn= np.zeros((N))
+Bn= np.zeros((N))
+#un0_5= np.zeros((N))
+#bn= np.zeros((N))
+V_new = np.zeros((N+1))
+B_new = np.zeros((N + 1))
 xs = np.linspace(a, b, N)
 
 
@@ -43,11 +47,15 @@ def SetIC():
     #global t, u, xs
     t = 0.0
     for i in range(N):
-        un[i] = U0(xs[i])
+        Vn[i] = U0(xs[i])
+        Bn[i] = U0(xs[i])
+
 
 def SetBC():
-    un1[0] = un[0] - 0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-2*un[0]+un[N-2])
-    un1[N-1] = un[N-1] -0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-un[N-1]+un[N-2])
+    V_new[0] = Vn[0] - 0.5*c*(Vn[1] - Vn[N-2])+0.5*c*c*(Vn[1]-2*Vn[0]+Vn[N-2])
+    V_new[N-1] = Vn[N-1] -0.5*c*(Vn[1] - Vn[N-2])+0.5*c*c*(Vn[1]-Vn[N-1]+Vn[N-2])
+    B_new[0] = Bn[0] - 0.5*c*(Bn[1] - Bn[N-2])+0.5*c*c*(Bn[1]-2*Bn[0]+Bn[N-2])
+    B_new[N-1] = Bn[N-1] -0.5*c*(Bn[1] - Bn[N-2])+0.5*c*c*(Bn[1]-Bn[N-1]+Bn[N-2])
 
 
 
@@ -55,30 +63,33 @@ def SetBC():
     
 
 
-def Step():
-    for i in range ( 1, N-1 ):
-        un1[i] = un[i] - 0.5*c*(un[i+1]-un[i-1]) + 0.5*c**2*(un[i+1] - 2*un[i]+un[i-1])
-        print(un1[i])
- 
+def Step1():
+    #for n in range(N):
+    for i in range(1, N-1):
+        V_new[i] = 0.5 * (Vn[i + 1] + Vn[i - 1]) - 0.5 * a * dt / dx * (Bn[i + 1] - Bn[i - 1])
+        B_new[i] = 0.5 * (Bn[i + 1] + Bn[i - 1]) - 0.5 * b * dt / dx * (Vn[i + 1] - Vn[i - 1])
+    Vn[:] = V_new
+    Bn[:] = B_new
 #обновление НУ
 def UpdateIC():
     for i in range ( 0, N):
-        un[i] = un1[i]
+        Vn[i] = V_new[i]
+        Bn[i] = B_new[i]
 
 
 SetIC()
 while t <= t_stop:
     SetBC()  
-    Step()   
+    Step1()   
     UpdateIC() 
     t += dt
 
 def SaveData():
     try:
-        with open("data12.txt", "w") as f:
+        with open("data100.txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
-                f.write(f"{xs[i]} {un1[i]} \n")
+                f.write(f"{xs[i]} {V_new[i]} \n")
                 #print(un1[i])
     except IOError:
         print("unable to open file for writing")

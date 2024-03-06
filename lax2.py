@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore")
 a = 0
 b = 1
 N = 80
-v = 1
+v_max = 1
 t_stop = 0.4
 t = 0 #текущее время
 c = 0.9 #Kurant number
@@ -17,12 +17,13 @@ c = 0.9 #Kurant number
 #array for function values
 un= np.zeros((N))
 un1 = np.zeros((N))
+un_s = np.zeros((N))
 xs = np.linspace(a, b, N)
 
 
 #построение расчетной сетки 
 dx = (b-a)/ (N-1)
-dt = c * dx/v
+dt = c * dx/v_max
 xs[0] = a
 
 for i in range (1, N):
@@ -56,9 +57,11 @@ def SetBC():
 
 
 def Step():
-    for i in range ( 1, N-1 ):
-        un1[i] = un[i] - 0.5*c*(un[i+1]-un[i-1]) + 0.5*c**2*(un[i+1] - 2*un[i]+un[i-1])
-        print(un1[i])
+    for i in range ( 0, N-1 ):
+        un_s[i] = 0.5*(un[i+1]+un[i])-c*0.5*(un[i+1]-un[i])
+        for i in range ( 1, N-1 ):
+            un1[i] = un[i] - c*(un_s[i]-un_s[i-1])
+       
  
 #обновление НУ
 def UpdateIC():
@@ -75,7 +78,7 @@ while t <= t_stop:
 
 def SaveData():
     try:
-        with open("data12.txt", "w") as f:
+        with open("data300.txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
                 f.write(f"{xs[i]} {un1[i]} \n")
@@ -85,32 +88,3 @@ def SaveData():
     #f.close()
 
 SaveData()
-
-
-
-
-
-
-#plt.plot(x,0*x,'bo',label='Initial Condition');
-# plt.xlim((-h,2*np.pi+h))
-# plt.ylim((-k,max(time)+k))
-# plt.xlabel('x')
-# plt.ylabel('time (ms)')
-# plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-# plt.title(r'Discrete Grid ',fontsize=24,y=1.08)
-# plt.show();
-# fig = plt.figure(figsize=(8,4))
-# plt.plot(x,u[:,0],'o:',label='Initial Condition')
-# plt.xlim([-0.1,max(x)+h])
-# plt.title('Intitial Condition',fontsize=24)
-# plt.xlabel('x')
-# plt.ylabel('u')
-# plt.legend(loc='best')
-# plt.show()       
-# fig = plt.figure(figsize=(12,6))
-# plt.subplot(121)
-# for j in range (1,time_steps+1):
-#     plt.plot(x,u[:,j],'o:')
-# plt.xlabel('x')
-# plt.ylabel('u')
-#
