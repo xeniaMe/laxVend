@@ -16,6 +16,7 @@ c = 0.9 #Kurant number
 
 #array for function values
 un= np.zeros((N))
+f= np.zeros((N))
 un1 = np.zeros((N))
 un_s = np.zeros((N))
 xs = np.linspace(a, b, N)
@@ -48,19 +49,22 @@ def SetIC():
 
 def SetBC():
     un1[0] = un[0] - 0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-2*un[0]+un[N-2])
-    un1[N-1] = un[N-1] -0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-un[N-1]+un[N-2])
+    un1[N-1] = un[N-1] -0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-2*un[N-1]+un[N-2])
 
 
 
 # расчет
     
-
+def UpdateTimeStep():
+    dt = c*dx/v_max
 
 def Step():
     for i in range ( 0, N-1 ):
-        un_s[i] = 0.5*(un[i+1]+un[i])-c*0.5*(un[i+1]-un[i])
-        for i in range ( 1, N-1 ):
-            un1[i] = un[i] - c*(un_s[i]-un_s[i-1])
+        f[i] = a*un[i]
+        un_s[i] = 0.5*(un[i+1]+un[i])-(dt/dx)*0.5*(un[i+1]-un[i])
+    for i in range ( 1, N-1 ):
+        f[i] = a*un_s[i]
+        un1[i] = un[i] - (dt/dx)*(un_s[i]-un_s[i-1])
        
  
 #обновление НУ
@@ -71,7 +75,8 @@ def UpdateIC():
 
 SetIC()
 while t <= t_stop:
-    SetBC()  
+    SetBC()
+    UpdateTimeStep()  
     Step()   
     UpdateIC() 
     t += dt

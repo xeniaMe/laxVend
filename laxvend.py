@@ -47,7 +47,7 @@ def SetIC():
 
 def SetBC():
     un1[0] = un[0] - 0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-2*un[0]+un[N-2])
-    un1[N-1] = un[N-1] -0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-un[N-1]+un[N-2])
+    un1[N-1] = un[N-1] -0.5*c*(un[1] - un[N-2])+0.5*c*c*(un[1]-2*un[N-1]+un[N-2])
 
 
 
@@ -75,7 +75,7 @@ while t <= t_stop:
 
 def SaveData():
     try:
-        with open("data12.txt", "w") as f:
+        with open("data200.txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
                 f.write(f"{xs[i]} {un1[i]} \n")
