@@ -10,18 +10,20 @@ L = 1e6 # длина расчетной области
 a = 0   # координата левой границы расчетной области
 b = L   # координата правой границы расчетной области
 N = 320
-a_v= 0.7 #скорость переноса
-v_max = a_v
+
 t = 0 #текущее время
 c = 0.95 #Kurant number
-Bz = 0.5 #Г, МП
-rho = 6*1.672e-24 #плотность протонов
+Bz = 1 #Г, МП
+n = 1e8 # концентраця частиц 
+rho = n*1.672e-24 # плотность протонов
 
 vA = Bz/np.sqrt(4*np.pi*rho)
 t_stop = L/vA
 v_0 = 0.05*vA
 lambd = 0.1*L
 k = 2*np.pi/lambd
+# начальная максимальная скорость на сетке
+v_max = abs(vA)
 
 print("Model parameters:")
 print(" B0     = ", Bz, " G")
@@ -30,6 +32,7 @@ print(" L      = ", L / 1e5, " km")
 print(" vA     = ", vA / 1e5, " km/s")
 print(" t_stop = ", t_stop, " s")
 print(" lambda = ", lambd / 1e5, " km")
+print(" v_max  = ", v_max / 1e5, " km/s")
 
 #array for function values
 vn= np.zeros((N))
