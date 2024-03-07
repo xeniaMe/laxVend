@@ -22,6 +22,14 @@ v_0 = 0.05*vA
 lambd = 0.1*L
 k = 2*np.pi/lambd
 
+print("Model parameters:")
+print(" B0     = ", Bz, " G")
+print(" rho0   = ", rho, " g/cm^3")
+print(" L      = ", L / 1e5, " km")
+print(" vA     = ", vA / 1e5, " km/s")
+print(" t_stop = ", t_stop, " s")
+print(" lambda = ", lambd / 1e5, " km")
+
 #array for function values
 vn= np.zeros((N))
 vn1 = np.zeros((N))
@@ -101,6 +109,8 @@ def UpdateIC():
 
 SetIC()
 while t <= t_stop:
+    print(  "t = ", t, " s")
+    print(  "  dt = ", dt, " s")
     SetBC()
     UpdateTimeStep()  
     Step()     
