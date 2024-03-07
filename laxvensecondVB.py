@@ -13,8 +13,8 @@ a_v= 0.7 #скорость переноса
 v_max = a_v
 t = 0 #текущее время
 c = 0.95 #Kurant number
-Bz =5e5 #Э, МП
-rho = 6 #плотность протонов
+Bz = 0.5 #Г, МП
+rho = 6*1.672e-24 #плотность протонов
 L = 1e6#длина расчетной области 
 vA = Bz/np.sqrt(4*np.pi*rho)
 t_stop = L/vA
@@ -93,11 +93,11 @@ def UpdateTimeStep():
 
 def Step():
     for i in range ( 0, N-1 ):
-        vn_s[i] = 0.5*(vn[i+1]+vn[i])-(dt/dx)*0.5*(Fv(vn[i+1])-Fv(vn[i]))
-        bn_s[i] = 0.5*(bn[i+1]+bn[i])-(dt/dx)*0.5*(Fb(bn[i+1])-Fb(bn[i]))    
+        vn_s[i] = 0.5*(vn[i+1]+vn[i])-(dt/dx)*0.5*(Fv(bn[i+1])-Fv(bn[i]))
+        bn_s[i] = 0.5*(bn[i+1]+bn[i])-(dt/dx)*0.5*(Fb(vn[i+1])-Fb(vn[i]))    
     for i in range ( 1, N-1 ):
-        vn1[i] = vn[i] - (dt/dx)*(Fv(vn_s[i])-Fv(vn_s[i-1]))  
-        bn1[i] = bn[i] - (dt/dx)*(Fb(bn_s[i])-Fb(bn_s[i-1]))
+        vn1[i] = vn[i] - (dt/dx)*(Fv(bn_s[i])-Fv(bn_s[i-1]))  
+        bn1[i] = bn[i] - (dt/dx)*(Fb(vn_s[i])-Fb(vn_s[i-1]))
     # print(vn)
 
 #обновление НУ
@@ -109,13 +109,12 @@ def UpdateIC():
 
 SetIC()
 while t <= t_stop:
-    print(  "t = ", t, " s")
-    print(  "  dt = ", dt, " s")
+    #print(  "t = ", t, " s")
+    #print(  "  dt = ", dt, " s")
     SetBC()
     UpdateTimeStep()  
     Step()     
-    UpdateIC() 
-    UpdateTimeStep()  
+    UpdateIC()  
     t += dt
 
 def SaveData():
