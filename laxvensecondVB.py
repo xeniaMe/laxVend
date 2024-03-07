@@ -45,8 +45,10 @@ xs = np.linspace(a, b, N)
 #построение расчетной сетки 
 dx = (b-a)/ (N-1)
 dt = c*dx/v_max
-xs[0] = a
+print(" dx = ", dx / 1e5, " km")
+print(" dt = ", dt, " s")
 
+xs[0] = a
 for i in range (1, N):
     xs[i] = xs[i-1] + dx
 
