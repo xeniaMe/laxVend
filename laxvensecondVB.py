@@ -112,20 +112,9 @@ def UpdateIC():
         vn[i] = vn1[i]
         bn[i] = bn1[i]
 
-
-SetIC()
-while t <= t_stop:
-    #print(  "t = ", t, " s")
-    #print(  "  dt = ", dt, " s")
-    SetBC()
-    UpdateTimeStep()  
-    Step()     
-    UpdateIC()  
-    t += dt
-
-def SaveData():
+def SaveData(n):
     try:
-        with open("data305.txt", "w") as f:
+        with open("data" + str(n) + ".txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
                 f.write(f"{xs[i]} {vn1[i]} \n")
@@ -133,4 +122,19 @@ def SaveData():
         print("unable to open file for writing")
     #f.close()
 
-SaveData()
+n = 0 # номер шага по времени
+SetIC()
+while t <= t_stop:
+    #print(  "t = ", t, " s")
+    #print(  "  dt = ", dt, " s")
+    SetBC()
+    UpdateTimeStep()  
+    Step()    
+    if ((n % 100) == 0):
+        SaveData(n)
+    UpdateIC()  
+    t += dt
+    n += 1
+
+print("Total number of steps = ", n)
+SaveData(n)
