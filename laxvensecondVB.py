@@ -80,10 +80,18 @@ def Fb(u):
     return -Bz*u
 
 def SetBC():
-    vn1[0] = vn[0] - 0.5*c*(vn[1] - vn[N-2])+0.5*c*c*(vn[1]-2*vn[0]+vn[N-2])
-    vn1[N-1] = vn[N-1] -0.5*c*(vn[1] - vn[N-2])+0.5*c*c*(vn[1]-2*vn[N-1]+vn[N-2])
-    bn1[0] = bn[0] - 0.5*c*(bn[1] - bn[N-2])+0.5*c*c*(bn[1]-2*bn[0]+bn[N-2])
-    bn1[N-1] = bn[N-1] -0.5*c*(bn[1] - bn[N-2])+0.5*c*c*(bn[1]-2*bn[N-1]+bn[N-2])
+    # периодические ГУ
+    # левая граница
+    vn_s[0] = 0.5*(vn[1]+vn[0])-(dt/dx)*0.5*(Fv(bn[1])-Fv(bn[0]))
+    bn_s[0] = 0.5*(bn[1]+bn[0])-(dt/dx)*0.5*(Fb(vn[1])-Fb(vn[0]))    
+    vn1[0] = vn[0] - (dt/dx)*(Fv(bn_s[0])-Fv(bn_s[N-2]))  
+    bn1[0] = bn[0] - (dt/dx)*(Fb(vn_s[0])-Fb(vn_s[N-2]))
+    # правая граница
+    vn_s[N-1] = 0.5*(vn[1]+vn[N-1])-(dt/dx)*0.5*(Fv(bn[1])-Fv(bn[N-1]))
+    bn_s[N-1] = 0.5*(bn[1]+bn[N-1])-(dt/dx)*0.5*(Fb(vn[1])-Fb(vn[N-1]))    
+    vn1[N-1] = vn[N-1] - (dt/dx)*(Fv(bn_s[N-1])-Fv(bn_s[N-2]))  
+    bn1[N-1] = bn[N-1] - (dt/dx)*(Fb(vn_s[N-1])-Fb(vn_s[N-2]))
+
 
 
 
@@ -113,6 +121,7 @@ def UpdateIC():
         bn[i] = bn1[i]
 
 def SaveData(n):
+    # к имени файла добавляется n - номер текущего шага
     try:
         with open("data" + str(n) + ".txt", "w") as f:
             f.write("#x u \n")
@@ -125,12 +134,14 @@ def SaveData(n):
 n = 0 # номер шага по времени
 SetIC()
 while t <= t_stop:
-    #print(  "t = ", t, " s")
-    #print(  "  dt = ", dt, " s")
     SetBC()
     UpdateTimeStep()  
     Step()    
+    # вывод n, t, dt на экран и сохранение результатов каждые 100 шагов
     if ((n % 100) == 0):
+        print(  "step No ", n)
+        print(  "t = ", t, " s")
+        print(  "dt = ", dt, " s")
         SaveData(n)
     UpdateIC()  
     t += dt
