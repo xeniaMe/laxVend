@@ -11,7 +11,7 @@ b = 1
 N = 320
 a_v= 0.7 #скорость переноса
 v_max = a_v
-t_stop = 0.4
+t_stop = 25
 t = 0 #текущее время
 c = 1.01 #Kurant number
 
@@ -83,6 +83,7 @@ while t <= t_stop:
     Step()   
     UpdateIC() 
     t += dt
+    print(t)
 
 def SaveData():
     try:
