@@ -68,8 +68,8 @@ def SetIC():
         vn[i] = v0(xs[i])
         bn[i] = b0(xs[i])
 
-def Fv(u):
-    return -Bz/4*np.pi*rho*u
+def Fv(b):
+    return -Bz/(4*np.pi*rho)*b
 
 def Fb(u):
     return -Bz*u
