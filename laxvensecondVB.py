@@ -18,8 +18,8 @@ n = 1e8 # концентраця частиц
 rho = n*1.672e-24 # плотность протонов
 
 vA = Bz/np.sqrt(4*np.pi*rho)
-t_stop = L/vA
 v_0 = 0.05*vA
+t_A = L/vA 
 lambd = 0.1*L
 k = 2*np.pi/lambd
 # начальная максимальная скорость на сетке
@@ -30,7 +30,7 @@ print(" B0     = ", Bz, " G")
 print(" rho0   = ", rho, " g/cm^3")
 print(" L      = ", L / 1e5, " km")
 print(" vA     = ", vA / 1e5, " km/s")
-print(" t_stop = ", t_stop, " s")
+#print(" t_stop = ", t_stop, " s")
 print(" lambda = ", lambd / 1e5, " km")
 print(" v_max  = ", v_max / 1e5, " km/s")
 
@@ -123,29 +123,35 @@ def UpdateIC():
 def SaveData(n):
     # к имени файла добавляется n - номер текущего шага
     try:
-        with open("data" + str(n) + ".txt", "w") as f:
+        with open("data_v" + str(n) + ".txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
                 f.write(f"{xs[i]} {vn1[i]} \n")
+        with open("data_b" + str(n) + ".txt", "w") as f:
+            f.write("#x u \n")
+            for i in range(len(xs)):
+                f.write(f"{xs[i]} {bn1[i]} \n")
     except IOError:
         print("unable to open file for writing")
     #f.close()
 
 n = 0 # номер шага по времени
 SetIC()
-while t <= t_stop:
-    SetBC()
-    UpdateTimeStep()  
-    Step()    
-    # вывод n, t, dt на экран и сохранение результатов каждые 100 шагов
-    if ((n % 100) == 0):
-        print(  "step No ", n)
-        print(  "t = ", t, " s")
-        print(  "dt = ", dt, " s")
-        SaveData(n)
-    UpdateIC()  
-    t += dt
-    n += 1
+t_stops = [0.1, 0.2, 0.4, 0.6, 0.8, 1.0]
+for t_stop in t_stops:
+    while t <= (t_stop*t_A):
+        SetBC()
+        UpdateTimeStep()  
+        Step()    
+        # вывод n, t, dt на экран и сохранение результатов каждые 100 шагов
+        if ((n % 100) == 0):
+            print(  "step No ", n)
+            print(  "t = ", t, " s")
+            print(  "dt = ", dt, " s")
+            SaveData(n)
+        UpdateIC()  
+        t += dt
+        n += 1
 
 print("Total number of steps = ", n)
 SaveData(n)
