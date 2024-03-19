@@ -7,24 +7,23 @@ files_list = [0, 100, 200, 300]
 
 
 fig = plt.figure()
-fig.suptitle(u't_stop = 4.5 s')
+fig.suptitle(u't_stop = 0.458 s')
 
 ax = fig.add_subplot(1, 2, 1)
-ax.set_title(u'v(x)')
-ax.set_xlabel(r'$x$')
-ax.set_ylabel(r'$v$')
+ax.set_title(u'V(z)')
+ax.set_xlabel(r'$z$')
+ax.set_ylabel(r'$V$')
 
 bx = fig.add_subplot(1, 2, 2)
-bx.set_title(u'b(x)')
-bx.set_xlabel(r'$x$')
-bx.set_ylabel(r'$b$')
+bx.set_title(u'B(z)')
+bx.set_xlabel(r'$z$')
+bx.set_ylabel(r'$B$')
 
 
 for file in files_list:
-    data1 = np.loadtxt("data_v" + str(file) + ".txt")    
-    data2 = np.loadtxt("data_b" + str(file) + ".txt")  
+    data1 = np.loadtxt("data_v" + str(file) + ".txt")   
     ax.plot(data1[:,0], data1[:,1], '-', label=str(file))
-    bx.plot(data2[:,0], data2[:,1], '-', label=str(file))
+    bx.plot(data1[:,0], data1[:,2], '-', label=str(file))
 
 
 ax.legend(loc= 'upper left')

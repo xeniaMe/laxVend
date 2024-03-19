@@ -16,10 +16,12 @@ c = 0.95 #Kurant number
 Bz = 1 #Г, МП
 n = 1e8 # концентраця частиц 
 rho = n*1.672e-24 # плотность протонов
+print(rho)
 
 vA = Bz/np.sqrt(4*np.pi*rho)
 v_0 = 0.05*vA
-t_A = L/vA 
+t_A = L/vA
+t_stop = 1*t_A 
 lambd = 0.1*L
 k = 2*np.pi/lambd
 # начальная максимальная скорость на сетке
@@ -30,7 +32,7 @@ print(" B0     = ", Bz, " G")
 print(" rho0   = ", rho, " g/cm^3")
 print(" L      = ", L / 1e5, " km")
 print(" vA     = ", vA / 1e5, " km/s")
-#print(" t_stop = ", t_stop, " s")
+print(" t_stop = ", t_stop, " s")
 print(" lambda = ", lambd / 1e5, " km")
 print(" v_max  = ", v_max / 1e5, " km/s")
 
@@ -54,18 +56,14 @@ print(" dt = ", dt, " s")
 xs[0] = a
 for i in range (1, N):
     xs[i] = xs[i-1] + dx
-
-
-#определение начальных и граничных условий
     
+#определение начальных и граничных условий    
 def b0(x):
     return 0.0  # Начальное Bx пусть будет 0
 
 def v0(x):
     return  v_0 * np.sin(x * k)
     
-
-
 def SetIC():
     #global t, u, xs
     t = 0.0
@@ -74,7 +72,7 @@ def SetIC():
         bn[i] = b0(xs[i])
 
 def Fv(b):
-    return -Bz/(4*np.pi*rho)*b
+    return (-Bz/(4*np.pi*rho))*b
 
 def Fb(u):
     return -Bz*u
@@ -92,18 +90,12 @@ def SetBC():
     vn1[N-1] = vn[N-1] - (dt/dx)*(Fv(bn_s[N-1])-Fv(bn_s[N-2]))  
     bn1[N-1] = bn[N-1] - (dt/dx)*(Fb(vn_s[N-1])-Fb(vn_s[N-2]))
 
-
-
-
 # расчет
-    
 def UpdateTimeStep():
     for j in range(N-1):
         v[j] = abs(vn[j]) + vA
     v_max = max(v)
     dt = c*dx/v_max
-
-
 
 def Step():
     for i in range ( 0, N-1 ):
@@ -126,32 +118,28 @@ def SaveData(n):
         with open("data_v" + str(n) + ".txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
-                f.write(f"{xs[i]} {vn1[i]} \n")
-        with open("data_b" + str(n) + ".txt", "w") as f:
-            f.write("#x u \n")
-            for i in range(len(xs)):
-                f.write(f"{xs[i]} {bn1[i]} \n")
+                f.write(f"{xs[i]} {vn1[i]} {bn1[i]} \n")
+       
     except IOError:
         print("unable to open file for writing")
     #f.close()
 
 n = 0 # номер шага по времени
 SetIC()
-t_stops = [0.1, 0.2, 0.4, 0.6, 0.8, 1.0]
-for t_stop in t_stops:
-    while t <= (t_stop*t_A):
-        SetBC()
-        UpdateTimeStep()  
-        Step()    
-        # вывод n, t, dt на экран и сохранение результатов каждые 100 шагов
-        if ((n % 100) == 0):
-            print(  "step No ", n)
-            print(  "t = ", t, " s")
-            print(  "dt = ", dt, " s")
-            SaveData(n)
-        UpdateIC()  
-        t += dt
-        n += 1
+
+while t <= t_stop:
+    SetBC()
+    UpdateTimeStep()  
+    Step()    
+    # вывод n, t, dt на экран и сохранение результатов каждые 100 шагов
+    if ((n % 100) == 0):
+        print(  "step No ", n)
+        print(  "t = ", t, " s")
+        print(  "dt = ", dt, " s")
+        SaveData(n)
+    UpdateIC()  
+    t += dt
+    n += 1
 
 print("Total number of steps = ", n)
 SaveData(n)
