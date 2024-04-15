@@ -12,7 +12,7 @@ b = L   # координата правой границы расчетной о
 N = 320
 
 t = 0 #текущее время
-c = 1 #Kurant number
+c = 0.6 #Kurant number
 Bz = 1 #Г, МП
 n = 1e8 # концентраця частиц 
 rho = n*1.672e-24 # плотность протонов
@@ -20,8 +20,9 @@ print(rho)
 
 vA = Bz/np.sqrt(4*np.pi*rho)
 v_0 = 0.05*vA
+B_0 = 0.05*Bz
 t_A = L/vA
-t_stop = 1*t_A 
+t_stop = 2*t_A 
 lambd = 0.1*L
 k = 2*np.pi/lambd
 # начальная максимальная скорость на сетке
@@ -59,7 +60,7 @@ for i in range (1, N):
     
 #определение начальных и граничных условий    
 def b0(x):
-    return 0.0  # Начальное Bx пусть будет 0
+    return B_0 * np.sin(x * k) # Начальное Bx пусть будет 0
 
 def v0(x):
     return  v_0 * np.sin(x * k)
@@ -131,6 +132,9 @@ def SaveData(n):
         print("unable to open file for writing")
     #f.close()
 
+print("Press a key to star a simulation")
+input()
+
 n = 0 # номер шага по времени
 SetIC()
 # Сохранение НУ
@@ -142,10 +146,11 @@ while t <= t_stop:
     UpdateTimeStep()  
     Step()    
     # вывод n, t, dt на экран и сохранение результатов каждые 100 шагов
-    if ((n % 100) == 0):
+    if ((n % 300) == 0):
         print(  "step No ", n)
-        print(  "t = ", t, " s")
-        print(  "dt = ", dt, " s")
+        print(  "t     = ", t, " s")
+        print(  "dt    = ", dt, " s")
+        print(  "v_max = ", v_max/1e5, " km/s")
         SaveData(n)
     UpdateIC()  
     t += dt
