@@ -12,7 +12,7 @@ b = L   # координата правой границы расчетной о
 N = 320
 
 t = 0 #текущее время
-c = 0.95 #Kurant number
+c = 1 #Kurant number
 Bz = 1 #Г, МП
 n = 1e8 # концентраця частиц 
 rho = n*1.672e-24 # плотность протонов
@@ -65,8 +65,8 @@ def v0(x):
     return  v_0 * np.sin(x * k)
     
 def SetIC():
-    #global t, u, xs
-    t = 0.0
+    global t, vn, bn, xs
+    #t = 0.0
     for i in range(N):
         vn[i] = v0(xs[i])
         bn[i] = b0(xs[i])
@@ -78,6 +78,7 @@ def Fb(u):
     return -Bz*u
 
 def SetBC():
+    global t, vn_s, bn_s, vn1, bn1, vn, bn, dt, dx
     # периодические ГУ
     # левая граница
     vn_s[0] = 0.5*(vn[1]+vn[0])-(dt/dx)*0.5*(Fv(bn[1])-Fv(bn[0]))
@@ -92,12 +93,14 @@ def SetBC():
 
 # расчет
 def UpdateTimeStep():
+    global dt, v_max, v, vn
     for j in range(N-1):
         v[j] = abs(vn[j]) + vA
     v_max = max(v)
     dt = c*dx/v_max
 
 def Step():
+    global dt, vn_s, bn_s, vn1, bn1, vn, bn, dt, dx
     for i in range ( 0, N-1 ):
         vn_s[i] = 0.5*(vn[i+1]+vn[i])-(dt/dx)*0.5*(Fv(bn[i+1])-Fv(bn[i]))
         bn_s[i] = 0.5*(bn[i+1]+bn[i])-(dt/dx)*0.5*(Fb(vn[i+1])-Fb(vn[i]))    
@@ -108,6 +111,7 @@ def Step():
 
 #обновление НУ
 def UpdateIC():
+    global t, vn, bn, vn1, bn1
     for i in range ( 0, N):
         vn[i] = vn1[i]
         bn[i] = bn1[i]

@@ -11,13 +11,13 @@ fig.suptitle(u't_stop = 0.458 s')
 
 ax = fig.add_subplot(1, 2, 1)
 ax.set_title(u'V(z)')
-ax.set_xlabel(r'$z$')
-ax.set_ylabel(r'$V$')
+ax.set_xlabel(r'$z, см$')
+ax.set_ylabel(r'$V, см/с$')
 
 bx = fig.add_subplot(1, 2, 2)
 bx.set_title(u'B(z)')
-bx.set_xlabel(r'$z$')
-bx.set_ylabel(r'$B$')
+bx.set_xlabel(r'$z, см$')
+bx.set_ylabel(r'$B, Гс$')
 
 
 for file in files_list:
