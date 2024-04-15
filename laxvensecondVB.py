@@ -122,7 +122,10 @@ def SaveData(n):
         with open("data_v" + str(n) + ".txt", "w") as f:
             f.write("#x u \n")
             for i in range(len(xs)):
-                f.write(f"{xs[i]} {vn1[i]} {bn1[i]} \n")
+                if (n == 0): # начальное условие
+                    f.write(f"{xs[i]} {vn[i]} {bn[i]} \n")
+                else:
+                    f.write(f"{xs[i]} {vn1[i]} {bn1[i]} \n")
        
     except IOError:
         print("unable to open file for writing")
@@ -130,7 +133,10 @@ def SaveData(n):
 
 n = 0 # номер шага по времени
 SetIC()
+# Сохранение НУ
+SaveData(n)
 
+n = n + 1
 while t <= t_stop:
     SetBC()
     UpdateTimeStep()  
