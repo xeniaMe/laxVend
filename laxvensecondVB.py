@@ -12,7 +12,7 @@ b = L   # координата правой границы расчетной о
 N = 320
 
 t = 0 #текущее время
-c = 0.6 #Kurant number
+c = 0.95 #Kurant number
 Bz = 1 #Г, МП
 n = 1e8 # концентраця частиц 
 rho = n*1.672e-24 # плотность протонов
@@ -82,6 +82,8 @@ def SetBC():
     global t, vn_s, bn_s, vn1, bn1, vn, bn, dt, dx
     # периодические ГУ
     # левая граница
+    vn_s[N-2] = 0.5*(vn[N-1]+vn[N-2])-(dt/dx)*0.5*(Fv(bn[N-1])-Fv(bn[N-2]))
+    bn_s[N-2] = 0.5*(bn[N-1]+bn[N-1])-(dt/dx)*0.5*(Fb(vn[N-1])-Fb(vn[N-2]))
     vn_s[0] = 0.5*(vn[1]+vn[0])-(dt/dx)*0.5*(Fv(bn[1])-Fv(bn[0]))
     bn_s[0] = 0.5*(bn[1]+bn[0])-(dt/dx)*0.5*(Fb(vn[1])-Fb(vn[0]))    
     vn1[0] = vn[0] - (dt/dx)*(Fv(bn_s[0])-Fv(bn_s[N-2]))  

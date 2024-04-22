@@ -14,8 +14,8 @@ plt.rcParams.update({'ytick.labelsize':fsize})
 plt.rcParams.update({'legend.fontsize':fsize-2})
 
 
-#files_list = [0, 100, 200, 300]
-files_list = [0, 100]
+files_list = [0, 300, 600, 671, 706]
+#files_list = [0, 100]
 
 
 # 1 дюйм в сантиметрах
