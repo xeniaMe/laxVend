@@ -14,7 +14,9 @@ mu = 2.3
 year = 365*24*3600
 
 # ----- параметры схемы -------------------------------------------------------
-N = 320
+N = 320 # число узлов
+Ngs = 1 # яисло фиктивных ячеек с каждой стороны
+Ntot = N + 2*Ngs # полное число ячеек
 t = 0 #текущее время
 c = 0.5 #Kurant number
 
@@ -83,20 +85,20 @@ print(" v_max  = ", v_max / 1e5, " km/s")
 # ----- основные переменные ---------------------------------------------------
 
 # консервативные переменные на шаге t^n
-u0_n = np.zeros((N)) # = rho
-u1_n = np.zeros((N)) # = rho*v_z
-u2_n = np.zeros((N)) # = rho*v_phi
-u3_n = np.zeros((N)) # = bphi
+u0_n = np.zeros((Ntot)) # = rho
+u1_n = np.zeros((Ntot)) # = rho*v_z
+u2_n = np.zeros((Ntot)) # = rho*v_phi
+u3_n = np.zeros((Ntot)) # = bphi
 # консервативные переменные на шаге t^(n+1/2) (промежуточном)
-u0_s = np.zeros((N)) # = rho
-u1_s = np.zeros((N)) # = rho*v_z
-u2_s = np.zeros((N)) # = rho*v_phi
-u3_s = np.zeros((N)) # = bphi
+u0_s = np.zeros((Ntot)) # = rho
+u1_s = np.zeros((Ntot)) # = rho*v_z
+u2_s = np.zeros((Ntot)) # = rho*v_phi
+u3_s = np.zeros((Ntot)) # = bphi
 # консервативные переменные на шаге t^(n+1)
-u0_n1 = np.zeros((N)) # = rho
-u1_n1 = np.zeros((N)) # = rho*v_z
-u2_n1 = np.zeros((N)) # = rho*v_phi
-u3_n1 = np.zeros((N)) # bphi
+u0_n1 = np.zeros((Ntot)) # = rho
+u1_n1 = np.zeros((Ntot)) # = rho*v_z
+u2_n1 = np.zeros((Ntot)) # = rho*v_phi
+u3_n1 = np.zeros((Ntot)) # bphi
 
 # списки векторов консервативных переменных
 u_n  = [u0_n, u1_n, u2_n, u3_n]
@@ -104,10 +106,10 @@ u_s  = [u0_s, u1_s, u2_s, u3_s]
 u_n1 = [u0_n1, u1_n1, u2_n1, u3_n1]
 
 # примитивные переменные на шаге t^n
-rho_n  = np.zeros((N))  # = rho
-vz_n    = np.zeros((N)) # = v_z
-vphi_n = np.zeros((N))  # v_phi
-B_n    = np.zeros((N))  # bphi
+rho_n  = np.zeros((Ntot))  # = rho
+vz_n    = np.zeros((Ntot)) # = v_z
+vphi_n = np.zeros((Ntot))  # v_phi
+B_n    = np.zeros((Ntot))  # bphi
 
 # rho_s = np.zeros((N)) # = rho
 # v_s = np.zeros((N)) # =v_z
@@ -229,11 +231,12 @@ def SetIC():
     global t, u_n, pv
     
     t = 0.0
-    for i in range(N):
-        pv[0][i] = rho_IC(zs[i])  # rho_n
-        pv[1][i] = vphi_IC(zs[i]) # vphi_n
-        pv[2][i] = v_IC(zs[i])    # vz_n
-        pv[3][i] = B_IC(zs[i])    # B_n
+    for i in range(Ngs, Ntot-Ngs): # без учета фиктивных ячеек: i=[Ngs, Ntot-Ngs) = [1, Ntot-2]
+        # учитываем, что в массиве узлов zs нет координат фиктивных узлов    
+        pv[0][i] = rho_IC(zs[i-Ngs])  # rho_n
+        pv[1][i] = vphi_IC(zs[i-Ngs]) # vphi_n
+        pv[2][i] = v_IC(zs[i-Ngs])    # vz_n
+        pv[3][i] = B_IC(zs[i-Ngs])    # B_n
         
     # перевод заданных начальных примитивных переменных в начальные консервативные
     for var_n in range(4):
@@ -298,10 +301,11 @@ def SetBC():
     vz_L    = 0.0 #
     B_L    = 0.0 #
     
-    u_n1[0][0] = rho_L
-    u_n1[1][0] = rho_L * vphi_L
-    u_n1[2][0] = rho_L * vz_L
-    u_n1[3][0] = B_L
+    # это значения на левой границе (i = Ngs = 1)
+    u_n1[0][Ngs] = rho_L
+    u_n1[1][Ngs] = rho_L * vphi_L
+    u_n1[2][Ngs] = rho_L * vz_L
+    u_n1[3][Ngs] = B_L
     
     # правая граница
     rho_R  = rho_ISM
@@ -309,21 +313,28 @@ def SetBC():
     vz_R   = 0.0 #
     B_R    = 0.0 #
     
-    u_n1[0][N-1] = rho_R
-    u_n1[1][N-1] = rho_R * vphi_R
-    u_n1[2][N-1] = rho_R * vz_R
-    u_n1[3][N-1] = B_R
+    # это значения внутри фиктивных ячеек справа
+    # u_n1[0][Ntot-1] = u_n[0][Ntot-Ngs-1]#rho_R
+    # u_n1[1][Ntot-1] = u_n[1][Ntot-Ngs-1]#rho_R * vphi_R
+    # u_n1[2][Ntot-1] = u_n[2][Ntot-Ngs-1]#rho_R * vz_R
+    # u_n1[3][Ntot-1] = u_n[3][Ntot-Ngs-1]#B_R
+    
+    # это значения на правой границе (i = Ntot-Ngs-1 = Ntot-2)
+    u_n1[0][Ntot-Ngs-1] = rho_R
+    u_n1[1][Ntot-Ngs-1] = rho_R * vphi_R
+    u_n1[2][Ntot-Ngs-1] = rho_R * vz_R
+    u_n1[3][Ntot-Ngs-1] = B_R
     
 
-# расчет
+# 
 def UpdateTimeStep():
     global dt, v_max, v, v_n
 
-    for i in range(N):
+    for i in range(Ngs, Ntot-Ngs): # цикл без учета фиктивных ячеек
         # квадрат безразмерной альв. скорости
         vAvA = (2.0/beta) * (Bz**2 + B_n[i]**2) / rho_n[i]
         # полная скорость, 1.0 - это б.р. скорость звука
-        vv[i] = abs(vz_n[i]) + abs(vphi_n[i]) + np.sqrt(1.0 + vAvA)
+        vv[i-Ngs] = abs(vz_n[i]) + abs(vphi_n[i]) + np.sqrt(1.0 + vAvA)
         
     v_max = max(vv)
     dt = c*dz/v_max
@@ -337,11 +348,11 @@ def Step():
     global dt, u_n, u_s, u_n1, dz
     
     for var_n in range(4):
-        for i in range(0, N-1):
+        for i in range(Ngs, Ntot-Ngs-1): # i = [Ngs, Ntot-Ngs-1) = [1, Ntot-3]
             u_s[var_n][i] =  0.5 * (u_n[var_n][i+1] + u_n[var_n][i]) - 0.5*(dt/dz)*(F(u_n, i+1, var_n) - F(u_n, i, var_n)) + Source(u_n, i, var_n)
             
     for var_n in range(4):
-        for i in range (1, N-1):
+        for i in range (Ngs+1, Ntot-Ngs-1): # i =[Ngs+1, Ntot-Ngs-1) = [2, Ntot-2] 
             u_n1[var_n][i] = u_n[var_n][i] - (dt/dz) * (F(u_s, i, var_n) - F(u_s, i-1, var_n)) + 0.5 * (Source(u_s, i, var_n) + Source(u_n, i, var_n))
             
     for var_n in range(4):
@@ -351,7 +362,8 @@ def Step():
 def UpdateIC():
     global t, u_n, u_n1
     for var_n in range(4):
-        u_n[var_n] = u_n1[var_n]
+        # перебируем значение вутри сетки, без учета фиктивных ячеек
+        u_n[var_n][Ngs:Ntot-Ngs-1:] = u_n1[var_n][Ngs:Ntot-Ngs-1:]
 
 def SaveData(n):
     data = []
@@ -360,11 +372,13 @@ def SaveData(n):
     if (n == 0): # начальное условие
         for var_n in range(4):
             c2p(var_n, u_n, pv)
-            data.append(pv[var_n])
+            # сохраняем данные без учета фиктивных ячеек
+            data.append(pv[var_n][Ngs:Ntot-Ngs:])
     else:
         for var_n in range(4):
             c2p(var_n, u_n1, pv)
-            data.append(pv[var_n])
+            # сохраняем данные без учета фиктивных ячеек
+            data.append(pv[var_n][Ngs:Ntot-Ngs:])
         
     # данные сохраняются в папку ./out/
     # столбцы 1, 2, 3 - массивы xs, vn1, bn1 соответственно
