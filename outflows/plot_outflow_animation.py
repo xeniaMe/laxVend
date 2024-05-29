@@ -59,3 +59,4 @@ plt.tight_layout()
 
 ani = animation.ArtistAnimation(fig, ims, interval=500, blit=True,                          repeat_delay=1000)
 # fig.show()
+ani.save("v0.gif", dpi=300)

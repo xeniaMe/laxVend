@@ -30,6 +30,7 @@ z_d = 1.0     # полутолщина диска
 rho_ISM = np.exp(-0.5*z_d**2) # безразмерная плотность МЗС, в ед. rho0
 beta = 1.0    # плазменный параметр
 Bz = 1.0      # безразмерная компонента Bz (для нее уравнения не решаются)
+eps = 0.2
 
 # 0 - расчет без вращения, 1 - с вращением
 rotation_flag = 1.0 
@@ -43,7 +44,7 @@ c_T = np.sqrt(Rg * T0 / mu) # скорость звука, см/с
 v0 = c_T
 H = 0.05 * r_cm # шкала высот диска
 t0 = H / v0     # шкала измерения времени
-beta=1         # плазменный параметр
+beta= 1.0        # плазменный параметр
 p0 = rho0*v0**2 # шкала измерения давления
 B0 = np.sqrt(8.0*np.pi*p0/beta) # шкала измерения маг. поля
 g0 = v0**2/H    # шкала измерения ускорения
@@ -160,7 +161,7 @@ vphi_s = rotation_flag*v_phi0(r_cm, 1.0 * H) / v0
 def vphi_IC(z):
     if z < 1.0:
         return rotation_flag*v_phi0(r_cm, z * H) / v0
-    elif z < 1.2: # плавный переход к атмосфере диска - чтобы избежать распада разрыва
+    elif z < 1.3: # плавный переход к атмосфере диска - чтобы избежать распада разрыва
         return vphi_s + (z - 1.0) * (0 - vphi_s) / (1.2 - 1.0)
     else:
         return 0.0
@@ -357,7 +358,7 @@ def Step():
     # Метод Л-В, этап корректора
     for var_n in range(4):
         for i in range (Ngs + 1, Ntot-Ngs):
-            u_n1[var_n][i] = u_n[var_n][i] - (dt/dz) * (F(u_s, i, var_n) - F(u_s, i-1, var_n)) + 0.5 * dt * (Source(u_s, i, var_n) + Source(u_n, i, var_n))
+            u_n1[var_n][i] = u_n[var_n][i] - (dt/dz) * (F(u_s, i, var_n) - F(u_s, i-1, var_n)) + 0.5 * dt * (Source(u_s, i, var_n) + Source(u_n, i, var_n)) + eps*(u_n[var_n][i+1]+2*u_n[var_n][i]+u_n[var_n][i-1])
             
     # построить на основе решения вектор примитивных переменных
     for var_n in range(4):

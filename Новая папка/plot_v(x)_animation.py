@@ -17,7 +17,7 @@ plt.rcParams.update({'legend.fontsize': fsize-2})
 
 file0 = 0 # номер первого файла данных
 fileN = 700 # номер последнего файла данных
-dfile = 10 # шаг по файлам - с каким интервалом их считывать
+dfile = 300 # шаг по файлам - с каким интервалом их считывать
 f_list = [] # список файлов для анимации
 for i in range(int(fileN/dfile)):
     file_n = (i+1)*dfile
@@ -45,6 +45,8 @@ axs.set_ylabel(r'$V, км/с$')
 r_unit = 1e5  # 1 километр
 # единица измерения скорости
 v_unit = 1e5  # 1 километр в секунду
+# единица измерения мп
+b_unit = 1e5  # 1 километр в секунду
 
 
 ims = []
@@ -53,8 +55,15 @@ for file in files_list:
     im = axs.plot(data1[:,0]/r_unit, data1[:,1] / v_unit, '-', label=str(file))
     ims.append(im)
 
+ims1 = []
+for file in files_list:
+    data1 = np.loadtxt("data_v" + str(file) + ".txt")
+    im = axs.plot(data1[:,0]/r_unit, data1[:,2] / b_unit, '-', label=str(file))
+    ims1.append(im)
+
 
 plt.tight_layout()
-
-ani = animation.ArtistAnimation(fig, ims, interval=500, blit=True,                          repeat_delay=1000)
-ani.save("v.gif", dpi=300, writer=PillowWriter(fps=100))
+ani1 = animation.ArtistAnimation(fig, ims, interval=500, blit=True,   repeat_delay=1000)
+ani2 = animation.ArtistAnimation(fig, ims1, interval=500, blit=True,   repeat_delay=1000)
+ani1.save("v.gif", dpi=300, writer=PillowWriter(fps=100))
+ani2.save("b.gif", dpi=300, writer=PillowWriter(fps=100))
