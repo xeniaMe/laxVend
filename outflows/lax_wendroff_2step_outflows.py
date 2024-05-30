@@ -28,9 +28,9 @@ b = L   # координата правой границы расчетной о
 r_cm = 1 * au # радиальное расстояние от звезды
 z_d = 1.0     # полутолщина диска
 rho_ISM = np.exp(-0.5*z_d**2) # безразмерная плотность МЗС, в ед. rho0
-beta = 1.0    # плазменный параметр
+beta = 10.0    # плазменный параметр
 Bz = 1.0      # безразмерная компонента Bz (для нее уравнения не решаются)
-eps = 0.2
+eps = 0.0
 
 # 0 - расчет без вращения, 1 - с вращением
 rotation_flag = 1.0 
@@ -161,7 +161,7 @@ vphi_s = rotation_flag*v_phi0(r_cm, 1.0 * H) / v0
 def vphi_IC(z):
     if z < 1.0:
         return rotation_flag*v_phi0(r_cm, z * H) / v0
-    elif z < 1.3: # плавный переход к атмосфере диска - чтобы избежать распада разрыва
+    elif z < 1.2: # плавный переход к атмосфере диска - чтобы избежать распада разрыва
         return vphi_s + (z - 1.0) * (0 - vphi_s) / (1.2 - 1.0)
     else:
         return 0.0
@@ -333,6 +333,10 @@ def SetBC():
 # вычисление шага по времени
 def UpdateTimeStep():
     global dt, v_max, v, v_n
+    # флаг указывает, успешно ли выполнен расчет шага
+    success = True
+    # сообщение об успешности (неуспешности) расчета
+    message = "Time step is successfully determined"
 
     for i in range(Ngs, Ntot-Ngs): # цикл без учета фиктивных ячеек
         # квадрат безразмерной альв. скорости
@@ -342,8 +346,12 @@ def UpdateTimeStep():
         
     v_max = max(vv)
     dt = c*dz/v_max
+
+    if (v_max > 10.0*vA):
+        success = False
+        message = "Velocity became unphysically large"
     
-    return True
+    return [success, message]
 
 
 # шаг по времени
@@ -358,7 +366,7 @@ def Step():
     # Метод Л-В, этап корректора
     for var_n in range(4):
         for i in range (Ngs + 1, Ntot-Ngs):
-            u_n1[var_n][i] = u_n[var_n][i] - (dt/dz) * (F(u_s, i, var_n) - F(u_s, i-1, var_n)) + 0.5 * dt * (Source(u_s, i, var_n) + Source(u_n, i, var_n)) + eps*(u_n[var_n][i+1]+2*u_n[var_n][i]+u_n[var_n][i-1])
+            u_n1[var_n][i] = u_n[var_n][i] - (dt/dz) * (F(u_s, i, var_n) - F(u_s, i-1, var_n)) + 0.5 * dt * (Source(u_s, i, var_n) + Source(u_n, i, var_n)) + eps * dt * (u_n[var_n][i+1] - 2*u_n[var_n][i] + u_n[var_n][i-1])
             
     # построить на основе решения вектор примитивных переменных
     for var_n in range(4):
@@ -402,10 +410,10 @@ SaveData(n)
 
 n = n + 1
 while t <= t_stop:
-    contin = UpdateTimeStep()  
+    [contin, message] = UpdateTimeStep()  
     # выход из цикла и сохранение результатов, если что-то пошло не так (TO DO)
     if(contin == False):
-        print("Exiting")
+        print("Exiting because", message)
         SaveData(n)
         break
 
