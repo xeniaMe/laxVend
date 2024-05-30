@@ -389,7 +389,7 @@ def SaveData(n):
             data.append(pv[var_n][Ngs:Ntot-Ngs:])
  
     # столбцы 1, 2, 3, 4, 5 - (безразмерные) массивы zs, rho, vphi, vz, Bphi соответственно
-    np.savetxt("data" + str(n) + ".dat", np.array(data).transpose(), fmt=('%.3e', '%.3e', '%.3e', '%.3e', '%.3e'))
+    np.savetxt("./out/data" + str(n) + ".dat", np.array(data).transpose(), fmt=('%.3e', '%.3e', '%.3e', '%.3e', '%.3e'))
 
 
 print("Press Enter to start a simulation")
