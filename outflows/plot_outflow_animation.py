@@ -11,7 +11,7 @@ plt.rcParams.update({'xtick.labelsize':fsize})
 plt.rcParams.update({'ytick.labelsize':fsize})
 plt.rcParams.update({'legend.fontsize':fsize-2})
 
-path = ""
+path = "./out/"
 
 file0 = 0 # номер первого файла данных
 fileN = 840 # номер последнего файла данных

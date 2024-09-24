@@ -13,8 +13,10 @@ plt.rcParams.update({'xtick.labelsize':fsize})
 plt.rcParams.update({'ytick.labelsize':fsize})
 plt.rcParams.update({'legend.fontsize':fsize-2})
 
-path = ""
-files_list = [10]
+# относительный путь к файлам данных
+path = "./out/"
+# список файлов для визуализации
+files_list = [0, 10, 100, 840]
 #files_list = [0, 100]
 
 
@@ -59,4 +61,5 @@ for file in files_list:
 # axs[0].legend(loc= 'upper left')
 plt.tight_layout()
 
-fig.show()
+# fig.show()
+fig.savefig("run.png")
