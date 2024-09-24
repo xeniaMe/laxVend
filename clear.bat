@@ -1,0 +1,1 @@
+del .\outflows\out\*.dat
