@@ -23,13 +23,13 @@ L = 5     # длина расчетной области, в единицах ш
 a = 0     # координата левой границы расчетной области
 b = L     # координата правой границы расчетной области
 
-eps = 0.0 # параметр искусственной вязкости
+eps = 100.0 # параметр искусственной вязкости
 
 # ----- параметры физ. модели -------------------------------------------------
 r_cm = 1 * au # радиальное расстояние от звезды
 z_d = 1.0     # полутолщина диска, в единицах шкалы высот диска H
 rho_ISM = np.exp(-0.5*z_d**2) # безразмерная плотность МЗС, в ед. rho0
-beta = 10.0   # плазменный параметр
+beta = 1.0   # плазменный параметр
 Bz = 1.0      # безразмерная компонента Bz
 
 # 0 - расчет без вращения, 1 - с вращением
@@ -40,8 +40,8 @@ gravity_flag = 1.0
 # ----- масштабы безразмерных переменных --------------------------------------
 rho0 = 1e-13    # температура в экватор. плоскости, г/см^3
 T0 = 500        # температура, К
-c_T = np.sqrt(Rg * T0 / mu) # скорость звука, см/с
-v0 = c_T
+c_Td = np.sqrt(Rg * T0 / mu) # скорость звука внутри диска, см/с
+v0 = c_Td
 H = 0.05 * r_cm # шкала высот диска
 t0 = H / v0     # шкала измерения времени
 p0 = rho0*v0**2 # шкала измерения давления
@@ -49,6 +49,9 @@ B0 = np.sqrt(8.0*np.pi*p0/beta) # шкала измерения маг. поля
 g0 = v0**2/H    # шкала измерения ускорения
 
 # ----- коэффициенты уравнений ------------------------------------------------
+
+Ta = T0*10.0 # температура в атомосфере, К
+c_Ta = np.sqrt(Rg * Ta / mu) # скорость звука в атмосфере, см/с
 
 # кеплеровская скорость
 def v_k(r_au):
@@ -60,14 +63,20 @@ vk0 = v_k(r_cm / au)
 def v_phi0(r_cm, z_cm):
     return v_k(r_cm / au) * np.power(1.0 + (z_cm / r_cm)**2, -0.75)
 
-# профиль плотности изотермической гидростатической атмосферы
-def rho_hs(z):
-    # return np.exp(-0.5 * z**2)
-    return np.exp(-0.5 * (vk0/c_T)**2 * (1.0 - (1.0 + (z*H/r_cm)**2.0)**(-0.5)))
+# профиль плотности изотермического гидростатического диска
+# здесь z - безразмерная координата (в единицах H)
+def rho_disk(z):
+    return np.exp(-0.5 * (vk0/c_Td)**2 * (1.0 - (1.0 + (z*H/r_cm)**2.0)**(-0.5)))
 
-# завивимость безразмерного давления от безразмерной плотности
-def p(rho):
-    return rho
+rho_surf = rho_disk(z_d)*T0/Ta
+# профиль плотности изотермической гидростатической атмосферы диска
+# здесь z - безразмерная координата (в единицах H)
+def rho_atm(z):
+    return rho_surf * np.exp((vk0/c_Ta)**2 * ((1.0 + (z*H/r_cm)**2.0)**(-0.5) - (1.0 + (z_d*H/r_cm)**2.0)**(-0.5)))
+
+# # завивимость безразмерного давления от безразмерной плотности
+# def p(rho):
+#     return rho
 
 # ускорение силы тяжести звезды, см/с^2
 def g_z(r_cm, z_cm, M_g):
@@ -91,7 +100,7 @@ print(" g0     = ", g0, " dyn")
 print("Model characteristics:")
 print(" vA     = ", vA / 1e5, " km/s")
 print(" v_k    = ", vk0 / 1e5, " km/s")
-print(" M_k    = ", vk0 / c_T)
+print(" M_k    = ", vk0 / c_Td)
 print(" t_stop = ", t_stop, " [t0]")
 print(" v_max  = ", v_max / 1e5, " km/s")
 
@@ -102,30 +111,34 @@ u0_n = np.zeros((Ntot)) # = rho
 u1_n = np.zeros((Ntot)) # = rho*v_z
 u2_n = np.zeros((Ntot)) # = rho*v_phi
 u3_n = np.zeros((Ntot)) # = bphi
+u4_n = np.zeros((Ntot)) # = p
 # консервативные переменные на шаге t^(n+1/2) (промежуточном)
 u0_s = np.zeros((Ntot)) # = rho
 u1_s = np.zeros((Ntot)) # = rho*v_z
 u2_s = np.zeros((Ntot)) # = rho*v_phi
 u3_s = np.zeros((Ntot)) # = bphi
+u4_s = np.zeros((Ntot)) # = p
 # консервативные переменные на шаге t^(n+1)
 u0_n1 = np.zeros((Ntot)) # = rho
 u1_n1 = np.zeros((Ntot)) # = rho*v_z
 u2_n1 = np.zeros((Ntot)) # = rho*v_phi
 u3_n1 = np.zeros((Ntot)) # bphi
+u4_n1 = np.zeros((Ntot)) # p
 
 # списки векторов консервативных переменных
-u_n  = [u0_n, u1_n, u2_n, u3_n]
-u_s  = [u0_s, u1_s, u2_s, u3_s]
-u_n1 = [u0_n1, u1_n1, u2_n1, u3_n1]
+u_n  = [u0_n, u1_n, u2_n, u3_n, u4_n]
+u_s  = [u0_s, u1_s, u2_s, u3_s, u4_s]
+u_n1 = [u0_n1, u1_n1, u2_n1, u3_n1, u4_n1]
 
 # примитивные переменные на шаге t^n
 rho_n  = np.zeros((Ntot))  # = rho
 vz_n    = np.zeros((Ntot)) # = v_z
 vphi_n = np.zeros((Ntot))  # = v_phi
 B_n    = np.zeros((Ntot))  # = bphi
+p_n    = np.zeros((Ntot))  # = p
 
 # список векторов примитивных переменных
-pv  = [rho_n, vphi_n, vz_n, B_n]
+pv  = [rho_n, vphi_n, vz_n, B_n, p_n]
 # вектор полной скорости на сетке
 vv = np.zeros((N))
 # массив узлов сетки
@@ -144,12 +157,20 @@ for i in range (1, N):
     
 # ----- функци начальных и граничных условий ----------------------------------
 
+# начальное распределение безразмерной температуры
+def T_IC(z):
+    if z < z_d:
+        return 1.0
+    else:
+        return Ta / T0
+    
 # начальное распределение плотности
 def rho_IC(z):
     if z < z_d:
-        return rho_hs(z)#np.exp(-0.5 * z**2)
+        return rho_disk(z)
     else:
-        return rho_hs(z_d)#np.exp(-0.5)
+        #return rho_surf#rho_atm(z)
+        return rho_atm(z)
 
 # начальное распределние скорости v_z
 def v_IC(z):
@@ -169,9 +190,13 @@ def vphi_IC(z):
 def B_IC(z):
     return 0.0
 
+# начальное распределение безразмерного давления p
+def p_IC(z):
+    return rho_IC(z) * T_IC(z)
+
 def p2c(var_n, cv, pv):
     """
-    Перевод вектора примитивных переменных в вектор консервативных переменных для переменной с номером var_n = {0, 1, 2, 3}
+    Перевод вектора примитивных переменных в вектор консервативных переменных для переменной с номером var_n = {0, 1, 2, 3, 4}
 
     Parameters
     ----------
@@ -187,7 +212,7 @@ def p2c(var_n, cv, pv):
     None.
 
     """    
-    # pv = {rho, vphi, vz, Bphi}
+    # pv = {rho, vphi, vz, Bphi, p}
     
     if var_n == 0:
         cv[var_n] = pv[0]
@@ -197,12 +222,14 @@ def p2c(var_n, cv, pv):
         cv[var_n] = pv[0] * pv[2] # rho*v_z
     elif var_n == 3:
         cv[var_n] = pv[3] # Bphi
+    elif var_n == 4:
+        cv[var_n] = pv[4] # p
     else:
         None
 
 def c2p(var_n, cv, pv):
     """
-     Перевод вектора консервативных переменных в вектор примитивных переменных для переменной с номером var_n = {0, 1, 2, 3}
+     Перевод вектора консервативных переменных в вектор примитивных переменных для переменной с номером var_n = {0, 1, 2, 3, 4}
 
      Parameters
      
@@ -227,6 +254,8 @@ def c2p(var_n, cv, pv):
         pv[var_n] = cv[2] / cv[0]  # v_z= [rho*v_z] / rho
     elif var_n == 3:
         pv[var_n] = cv[3] # Bphi
+    elif var_n == 4:
+        pv[var_n] = cv[4] # p
     else:
         None
 
@@ -241,9 +270,10 @@ def SetIC():
         pv[1][i] = vphi_IC(zs[i-Ngs]) # vphi_n
         pv[2][i] = v_IC(zs[i-Ngs])    # vz_n
         pv[3][i] = B_IC(zs[i-Ngs])    # B_n
+        pv[4][i] = p_IC(zs[i-Ngs])    # p_n
 
     # перевод заданных начальных примитивных переменных в начальные консервативные
-    for var_n in range(4):
+    for var_n in range(5):
         p2c(var_n, u_n, pv)
             
 
@@ -262,12 +292,17 @@ def F1(u, i):
 # поток импульса rho*v_z в ячейке с индексом i
 def F2(u, i):
     # = rho*v_z^2 + p + B_phi^2/beta
-    return (u[2][i])**2 / u[0][i] + p(u[0][i]) + (u[3][i])**2/beta
+    return (u[2][i])**2 / u[0][i] + u[4][i] + (u[3][i])**2/beta
 
 # поток Bphi в ячейке с индексом i
 def F3(u, i):
     # = v_z*B_phi - v_phi*Bz
     return u[2][i] * u[3][i] / u[0][i] - u[1][i] * Bz / u[0][i]
+
+# поток давления в ячейке с индексом i
+def F4(u, i):
+    # = (rho*v_z) * p / rho
+    return u[2][i] * u[4][i] / u[0][i]
 
 # поток величины с индексом var_n в ячейке с индексом i
 def F(u, i, var_n):
@@ -279,6 +314,8 @@ def F(u, i, var_n):
         return F2(u, i)
     elif var_n == 3:
         return F3(u, i)
+    elif var_n == 4:
+        return F4(u, i)
     else:
         None
 
@@ -297,6 +334,8 @@ def Source(u, i, var_n):
         
     elif var_n == 3:
         return 0.0
+    elif var_n == 4:
+        return 0.0
     else:
         None
         
@@ -307,14 +346,16 @@ def SetBC():
     # левая граница
     rho_L  = 1.0 # 
     vphi_L = rotation_flag*vk0 / v0 #
-    vz_L    = 0.0 #
+    vz_L   = 0.0 #
     B_L    = 0.0 #
+    p_L    = 1.0 # 
     
     # это значения на левой границе (i = Ngs = 1)
     u_n1[0][Ngs] = rho_L
     u_n1[1][Ngs] = rho_L * vphi_L
     u_n1[2][Ngs] = rho_L * vz_L
     u_n1[3][Ngs] = B_L
+    u_n1[4][Ngs] = p_L
   
 
     # условия свободного втекания, посредством фиктивных ячеек
@@ -322,6 +363,7 @@ def SetBC():
     u_n[1][Ntot-1] = u_n[1][Ntot-Ngs-2]
     u_n[2][Ntot-1] = u_n[2][Ntot-Ngs-2]
     u_n[3][Ntot-1] = u_n[3][Ntot-Ngs-2]
+    u_n[4][Ntot-1] = u_n[4][Ntot-Ngs-2]
 
     # u_n1[0][Ntot-Ngs-1] = rho_R
     # u_n1[1][Ntot-Ngs-1] = rho_R * vphi_R
@@ -341,14 +383,15 @@ def UpdateTimeStep():
         # квадрат безразмерной альв. скорости
         vAvA = (2.0/beta) * (Bz**2 + pv[3][i]**2) / pv[0][i]
         # полная скорость, 1.0 - это б.р. скорость звука
-        vv[i-Ngs] = abs(pv[2][i]) + abs(pv[1][i]) + np.sqrt(1.0 + vAvA)
+        #vv[i-Ngs] = abs(pv[2][i]) + abs(pv[1][i]) + np.sqrt(1.0 + vAvA)
+        vv[i-Ngs] = max(pv[2][i], abs(pv[1][i]), np.sqrt(1.0 + vAvA))
         
     v_max = max(vv)
     dt = c*dz/v_max
 
     if (v_max > 10.0*vA):
         success = False
-        message = "Velocity became unphysically large"
+        message = ("Velocity became unphysically large: v_max = %.3e" % (v_max/1e5))
     
     return [success, message]
 
@@ -358,23 +401,23 @@ def Step():
     global dt, u_n, u_s, u_n1, dz
     
     # Метод Л-В, этап предиктора
-    for var_n in range(4):
+    for var_n in range(5):
         for i in range(Ngs, Ntot-Ngs):
             u_s[var_n][i] =  0.5 * (u_n[var_n][i+1] + u_n[var_n][i]) - 0.5*(dt/dz)*(F(u_n, i+1, var_n) - F(u_n, i, var_n)) + Source(u_n, i, var_n)*dt
             
     # Метод Л-В, этап корректора
-    for var_n in range(4):
+    for var_n in range(5):
         for i in range (Ngs + 1, Ntot-Ngs):
             u_n1[var_n][i] = u_n[var_n][i] - (dt/dz) * (F(u_s, i, var_n) - F(u_s, i-1, var_n)) + 0.5 * dt * (Source(u_s, i, var_n) + Source(u_n, i, var_n)) + eps * dt * (u_n[var_n][i+1] - 2*u_n[var_n][i] + u_n[var_n][i-1])
             
     # построить на основе решения вектор примитивных переменных
-    for var_n in range(4):
+    for var_n in range(5):
         c2p(var_n, u_n1, pv)
 
 # обновление НУ
 def UpdateIC():
     global t, u_n, u_n1
-    for var_n in range(4):
+    for var_n in range(5):
         # перебируем значение внутри сетки, без учета фиктивных ячеек
         u_n[var_n][Ngs:Ntot-Ngs:] = u_n1[var_n][Ngs:Ntot-Ngs:]
 
@@ -384,19 +427,19 @@ def SaveData(n):
     data.append(zs)
     
     if (n == 0): # начальное условие
-        for var_n in range(4):
+        for var_n in range(5):
             c2p(var_n, u_n, pv)
             # сохраняем данные без учета фиктивных ячеек
             data.append(pv[var_n][Ngs:Ntot-Ngs:])
 
     else:
-        for var_n in range(4):
+        for var_n in range(5):
             c2p(var_n, u_n1, pv)
             # сохраняем данные без учета фиктивных ячеек
             data.append(pv[var_n][Ngs:Ntot-Ngs:])
  
-    # столбцы 1, 2, 3, 4, 5 - (безразмерные) массивы zs, rho, vphi, vz, Bphi соответственно
-    np.savetxt("./out/data" + str(n) + ".dat", np.array(data).transpose(), fmt=('%.3e', '%.3e', '%.3e', '%.3e', '%.3e'))
+    # столбцы 1, 2, 3, 4, 5, 6 - (безразмерные) массивы zs, rho, vphi, vz, Bphi, p соответственно
+    np.savetxt("./out/data" + str(n) + ".dat", np.array(data).transpose(), fmt=('%.3e', '%.3e', '%.3e', '%.3e', '%.3e', '%.3e'))
 
 
 print("Press Enter to start a simulation")
