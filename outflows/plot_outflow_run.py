@@ -16,7 +16,7 @@ plt.rcParams.update({'legend.fontsize':fsize-2})
 # относительный путь к файлам данных
 path = "./out/"
 # список файлов для визуализации
-files_list = [0, 10, 100, 840]
+files_list = [0, 100, 750]
 #files_list = [0, 100]
 
 
@@ -32,13 +32,14 @@ fig, axs = plt.subplots(2, 2, sharex=True, figsize=(fig_width_cm/inch2cm, fig_he
 
 axs[0][0].set_ylabel(r'$\rho/\rho_0$')
 axs[0][0].grid()
+axs[0][0].set_yscale("log")
 
-axs[0][1].set_ylabel(r'$v/v_0$')
+axs[0][1].set_ylabel(r'$v_\varphi/v_0$')
 axs[0][1].grid()
 
 axs[1][0].set_xlabel(r'$z/H$')
 # axs[1][0].set_ylabel(r'$L/L_0$')
-axs[1][0].set_ylabel(r'$v_\varphi/v_0$')
+axs[1][0].set_ylabel(r'$v/v_0$')
 axs[1][0].grid()
 
 axs[1][1].set_xlabel(r'$z/H$')
