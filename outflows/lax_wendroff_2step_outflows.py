@@ -1,5 +1,6 @@
 import numpy as np
 import math 
+from timeit import default_timer as timer
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -90,7 +91,7 @@ def g_z(r_cm, z_cm, M_g):
 # альвеновская скорость в начале расчета, см/с
 vA = B0 / np.sqrt(4.0 * np.pi * rho0)
 # время окончания расчета (безразмерное)
-t_stop = 0.1
+t_stop = 0.01
 # начальная максимальная скорость на сетке, см/с
 v_max = abs(vA)
 
@@ -455,6 +456,7 @@ SaveData(n)
 
 n = n + 1
 while t <= t_stop:
+    start = timer()
     [contin, message] = UpdateTimeStep()  
     # выход из цикла и сохранение результатов, если что-то пошло не так (TO DO)
     if(contin == False):
@@ -476,5 +478,7 @@ while t <= t_stop:
     t += dt
     n += 1
 
+end = timer()
+print(u'Время расчета: %.3e сек' % (end-start))
 print("Total number of steps = ", n)
 SaveData(n)
